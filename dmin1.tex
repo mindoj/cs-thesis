@@ -1,0 +1,427 @@
+%\documentclass[titlepage, 11pt]{article}
+%\documentclass[11pt, page]{article}
+\documentclass[11pt]{article}
+
+\usepackage[nottoc]{tocbibind}
+\usepackage{amsmath,amssymb,amsthm,amsfonts,graphics, cool,enumerate, upgreek, enumitem}
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage{hyperref}       % hyperlinks
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+
+\usepackage{multirow}
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+\usepackage{tikz-cd, graphicx, comment}
+%\usepackage[shortlabels]{enumitem} %clash with comment?
+
+%Margin set
+\usepackage[margin=1.0in]{geometry}
+
+% For algorithms and pseudocode
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+
+% For side by side figure
+\usepackage{caption}
+\usepackage{subcaption}
+
+%The following commands allow us to typeset theorems, problems, definitions, etc. 
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem*{definition}{Definition}
+\newtheorem{problem}[theorem]{Problem}
+\renewcommand{\qedsymbol}{\ensuremath{\blacksquare}} 
+
+% commands defined by dj
+\renewcommand{\qedsymbol}{\ensuremath{\blacksquare}}
+\newcommand\tab[1][1cm]{\hspace*{#1}}
+
+
+\title{When will deception work in \texttt{FlipIt} security games?}
+\author{Do June Min}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+    In cybersecurity settings, it is often useful to model the interaction between system administrators and malcious operators using game theory, while abstracting away specific threat models and countermeasures. 
+    %Both the administrator and the attacker can be thought of as aiming to either maintain or gain control of one or more valuable resource, which usually models network-related resources such as computer servers or root access. 
+    By doing an equilibrium analysis of such games, it is possible to reason about the rational behavior of the competing agents.  
+    %Unlike other models that assume perfect or absolutely no information about the adversary's actions, 
+    Our model assumes that the defender receives partial information about the attacker's action. That is, the defender is notified when the attack tries to compromise the resource. Moreover, the attacker is given the option to perform a ``deceptive'' attack, which is cheaper than compromising attacks but achieves nothing other than notifying the defender. The goal of our study is to see if this modified setting will result in the attacker being able to achieve higher utility, by forcing the defender to selectively respond to the flood of deceptive and real attcks, allowing some real attacks to be undefended. Our analysis of the base game model shows that deceptive strategies not work for the attacker. However, we show that this result does not necessarily hold in some extensions of the game, where there are multiple resources or the defender is contrained in its budget.
+\end{abstract}
+
+
+%\tableofcontents
+%\clearpage 
+%copy below... and paste
+
+\section{Introduction}
+
+%justification of the modelling
+
+
+In cybersecurity situations, modelling an adversary might be useful, especially if there is reason to believe that the main threat is from a malicious agent with specific objectives. For instance, a system administrator for a military organization is justified in assuming the existence of an enemy operative whose goal is to gain access to a server with confidential information. If there is a credible threat from adversaries, game theory is a natural choice for analyzing the expected behaviors of the adversaries and the defender\cite{Shiva1}. Then, this analysis can be used to inform the defender in making optimal choices, given information about recent attacks and threats from adversaries.
+
+A well-studied application of game theory in cybersecurity is the Stackelberg competition, where the leader commits to a choice, and the follower makes the move after observing the leader's choice. For instance, the defender may consider how to allocate defensive resources, under the assumption that the attacker will figure out this allocation strategy completely. Thus, the defender can form an optimal allocation strategy, expecting that the attacker will also play optimally against this strategy \cite{Tambe1}. In the cybersecutiy domain, system administrators can use this model to generate system scanning schedules, for example.
+
+Game theory can also be used to model the prolonged interaction between the attacker and the defender. Recent attacks on organizatiosn including Google, Lockheed Martin, and RSA have shown that \textit{Advanced Persistent Threats}(APTs) have emerged as a formidable means of compromising computer resources\cite{Cole1} . The attackers not only employ zero-day vulnerabilities to attack and control protected resources, but also monitor the defender's response and produce a counter against protective measures\cite{Allsopp1}. To model such situations, it is necessary to look at stochastic games, where the payoff is dependent of the state of the game\cite{Hu1}\cite{Rass1}\cite{Rass2}.
+
+In this study, we model the interaction between the attacker and the defender using a sequential stochastic game with imperfect information. The game begins with the defender in control of the resource, and the attacker making the first move. Beside the resource-compromising ``attack'' move, the attacker can play a “deceive” move, which does not compromise the system, but is indistinguishable from a normal attack for the defender. While the attacker does not get any information about the defender's action, the defender is notified when the attacker makes either a real or fake attack. This creates the possiblity that the attacker might exploit deceive moves to achieve higher payoff by forcing the defender to selectively respond to the flood of deceptive and real attcks, allowing some real attacks to be undefended. 
+
+The goal of the paper is to (1) characterize
+reasonable strategies for the attacker and the defender in this modified game, (2)
+determine if deceive will be played by the attacker in equilibrium, (3) if so, identify
+what kind of strategy is deceive played in and how much benefit it provides and (4)
+finally determine if the ability to deceive allows the attacker to achieve higher payoff in some equilibria. We report that the basic model we propose has a unique equilibrium in which deceive is not played. After analyzing the model, we propose possible extensions of the original model in which deceive is part of equilibrium strategy, and study which properties of the modified model causes deceive to be played. We find that for the base game with one resource, deceptive strategies not work for the attacker. However, we also show that this result does not necessarily hold in some extensions of the game, where there are multiple resources or the defender is contrained in its budget.
+
+
+\section{Related Work}
+
+%In this study, we relaxed this assumption and allowed the attacker to play a“deceive” move, which does not compromise the system, but is indistinguishablefrom a normal attack for the defender. This modification creates partial observability for the defender, while the attacker still does not receive any information. Hence, unlike the original \texttt{FlipIt}, our game is asymmetrical. It would then be interesting to see, if a class of strategies where the attacker would play deceive move will be in equilibria. There are opposing intuition on this. Intuitively, deception does not provide any cost for the attacker while it incurs some cost. Thus, a rational attacker would play deceive only when it guarantees future gain. On the other hand, deception is a common phenomenon; numerous organisms engage in deceptive behavior in adversarial situation, and one can see that how mixing deceiving moves with real attacks may force the opponent to selectively respond, allowing some attacks as a result.
+
+
+\texttt{FlipIt} is a stochastic game in which two players 
+compete to control a resource\cite{Dijk:2013:FGS:2722894.2723058}. Each player, the attacker and the defender, can perform a move called `flip'' that results in the agent controlling of the resource. The game is unique in that model cyber security situations in that it assumes stealthy compromise. Stealthy compromise means that neither the defender nor the attacker knows with certainty who controls the resource at any time(except the beginning), and that any move by either player is unobserved by the other. This condition of no observability makes the model both interesting and intractable. Each player has to plan his action when there is absolutely no information about the state of the game, except for the movement made by the agent. In this study, we relaxed this assumption and allowed the defender to observe when the attacker makes a move.
+
+Also, \texttt{FlipIt} is usually studied as an infinite game with a discount factor. A discount factor is usually set to a value between 0 and 1, to reflect the assumption that an agent prefers an immediate reward over a faraway one \cite{Mailath0}. \texttt{FlipIt} and our model belong to a class of model called \textit{Partially Observable Stochastic Game}, in which each agent's action is unseen by each other, and the state of the game(the control of the resource) dynamically changes as a result of each player's move, which in turn, determines the payoff function. As of now, there is no known algorithm or method to compute equilibria of infinite POSGs, and analysis of the game relies on limiting strategies. into a few classes. There are also approximation algorithms to solve POSGs \cite{Hansen1} \cite{Kumar1}.
+
+An extension of \texttt{FlipIt} which is of particular interest to us is \texttt{FlipThem}\cite{Laszka2014},
+which generalizes to multiple resources. Two control models, AND and OR, are studied. In the AND model, the attacker has to compromise all the resources to derive utility. In the OR model, compromising only one resource is enough. In \texttt{FlipThem}, each player cannot treat a resource independently from others, meaning different strategies will arise as a result. Although the game does not allow deceive move, we look at the concept of non-independence between resources as a possible condition for deceptive strategies in our research.
+
+\section{Game Model}
+
+In this section, we define our game model formally. The formal definition is not necessary for the first result, but will be used for the extensions of the base model. This section also covers and justify some of the modelling assumptions we made. Finally, we explain our choice of solution concept, which is used in the equilibrium analysis. 
+
+%\subsection{General Description}
+%This game is a modified version of \texttt{FlipIt} where the assumption of completely stealthy attack is relaxed. In this game, the Attacker($A$) and the Defender($D$) compete over the control of a resource. At each round, the Attacker plays Attack, Deceive, or NoOp.  Attack brings the control to the Attacker, while Deceive and NoOp do nothing. After the Attacker makes a move, the Defender gets a signal telling whether the move was a Probe(Attack or Deceive) or not. \textbf{TODO: NOTATION INTEGRATION}
+
+\subsection{Formal Definition}
+This section gives a formal definition of the modified \texttt{FlipIt} game, and introduces necessary notations.
+
+    ~\\
+    \textit{Players} \hspace*{0.1cm}
+    There are two players, the attacker($A$) and the defender($D$). 
+    It is important to note that unlike in the original \texttt{FlipIt} game, the game is not symmetric between the two players, as will be explained.
+    ~\\\\
+    \textit{Time} \hspace*{0.1cm}
+    The game begins at time $t = 0$ and continues indefinitely as $t \rightarrow \infty$. The model assumes discrete time steps. Thus, it can be thought of as an infinitely repeated sequential game, where the payoff for each player varies dependent on the control state of the game. Since we treat time as discrete, the word ``round'' is used interchangeably with time.
+    ~\\\\
+    \textit{Resources} \hspace*{0.1cm}
+    The players compete to control some valuable resources, collectively denoted as a set $R$. Each resource $r \in R$ has costs and payoffs associated with it.
+    ~\\\\
+    \textit{Game State} \hspace*{0.1cm}
+    The time-dependent variable $K_r(t)$ denotes the current player controlling the resource $r$ at time $t$; $K_r(t)$ is either 0 or 1 at any time $t$. The Attacker controls the resource if $K_r(t) = 0$, and the Defender controls if $K_r(t)=1$.
+    %For $i = 0, 1$ we also let
+    %$$K_i(t) = I(K(t) = i)$$
+    %Thus, $K_0(t) = 1 - K(t)$ and $K_1(t) = K(t)$.\\
+    The game begins with the Defender in control: $K_r(0) = 1$ for all $r \in R$.
+    ~\\\\
+    \textit{Costs} \hspace*{0.1cm}
+    There are three types of costs, the Attack cost, the Deceive cost and the Reboot cost. 
+    For both players, we assume that NoOp is of cost 0 for any resource $r$.
+    We define that at time step $t$, $c_{i_r}(t)$ denotes the cost of the action made by each player $i$. 
+    Player $i$’s total cost $C_i$ in a given game is just the sum of $c_i$  over $t$:
+    $$C_i(t) = \sum_{j=1}^{t} c_i(j) $$
+    where $c_i(j)$ denotes the cost of the move made by  player $i$ at round $t$, 
+    where $c_i(j) = \sum_{r=1}^{R} c_{i_r}(j)$.
+    ~\\\\
+    \textit{Gains} \hspace*{0.1cm}
+    We define that at time step $t$, $g_{D_r}(t) = 1$ if player $D$ controls the resource $r$, and $g_{A_r}(t)=0$ if not. 
+    Then, player $i$’s total gain $G_i$ in a given game is
+    just the sum of $g_i$  over $t$:
+    $$G_i(t) = \sum_{j=1}^{t} g_i(j)$$
+    where $g_i(j) = \sum_{r=1}^{R} g_{i_r}(j)$.
+    ~\\\\
+    \textit{Benefits} \hspace*{0.1cm}
+    Players receive utility equal to the accumulated control payoff they received over time, subtracted by the cost of the moves they made. 
+    Thus, for each player $i$, the \textit{net benefit} $B_i(t)$ is defined as follows:
+    $$B_i(t) = G_i(t) - C_i(t)$$
+    The average benefit of player $i$ is defined
+    $$\beta_i(t) = B_i(t)/t = G_i(t)/t - C_i(t)/t$$
+    \noindent
+    \textit{One Round of the Game} \hspace*{0.1cm}
+    \noindent At each round $t$, 
+    \\\tab (1) The Attacker can play Attack, Deceive, and NoOp.
+    \\\tab (2) Attack will compromise the resource, while Deceive does not.
+    \\\tab (3) If the Attacker played Attack or Deceive, the Defender receives a 
+    \\\tab \hspace*{0.48cm} signal that there has been a Probe or not.
+    \\\tab (4) After receiving the signal, the Defender either Reboots or NoOp.
+    \\\tab (5) Payoff computed according to the control status and move cost is 
+    \\\tab \hspace*{0.46cm} accumulated. This is specified in the next section.
+
+\begin{table}[!htbp]
+\centering
+\caption{Player Actions and Resulting Control State for Each Resource}
+\label{my-label}
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{Attacker Move} & \textbf{Defender Move} & \textbf{Control State}          \\ \hline
+Attack                 & \multirow{3}{*}{Reset} & \multirow{3}{*}{Defender}       \\ \cline{1-1}
+Deceive                &                        &                                 \\ \cline{1-1}
+NoOp                   &                        &                                 \\ \hline
+Attack                 & \multirow{3}{*}{NoOp}  & Attacker                        \\ \cline{1-1} \cline{3-3} 
+Deceive                &                        & \multirow{2}{*}{Previous State} \\ \cline{1-1}
+NoOp                   &                        &                                 \\ \hline
+\end{tabular}
+\end{table}
+
+\noindent
+    %information set belief set
+    %\textit{Strategies} \hspace*{0.1cm}
+    %For each information set in the game, a strategy profile $s$ assgins a move.
+
+\subsection{Assumptions}
+Before we present our first result, it is important to note that our model abstracts real cybersecurity situations by making the following assumptions. 
+
+First, we assume the game to be infinitely repeated. At first glance, it may seem more natural to model cybersecurity situations as a finite game, since all such situations happen on a finite horizon in real life. However, analyzing a finite game with standard equilibrium solution concepts would result in an implicit assumption that each player is aware of precisely when the interaction will terminate. This is a highly unrealistic assumption, and will result in backward induced equilibrium that does not generalize well. On the other hand, infinitely repeated games do not suffer from this problem, and can model situations where each player is uncertain of the end of the game. Also, our model uses discrete time frame, mainly an abstraction to simplify analysis.
+
+Another important assumption made is maximum patience by each player. Maximum patience means that the discount factor is 1. The discount factor is multiplied when calculating expected future reward of each player. In infinitely repeated games, having non-1 discount factor would generally result in different equilibrium behavior. Thus, after deriving results about the equilibria of the game, we consider the effect of having different values of discount factor.
+
+Moreover, we suppose complete information. That is, each player is aware of what strategy the other is using. However, this is different from perfect information, which means that every action is fully observed by all players. Our model is an imperfect information game, since each player gets only part of the full information. If the model is to be studied further, the model may be extended to a Bayesian game with probability distribution over possible player types. However, we limit our focus to complete information set-up in this paper.
+
+\subsection{Solution Concept}
+To study the equilibria of the game, we use \textit{Nash equilibrium} %\textit{sequential equilibrium}\cite{RePEc:cla:levarc:618897000000000813} 
+as solution concept. % In addition to strategy profiles, \textit{sequential equilibrium} specifies a belief for each player, which represents the probability distribution over nodes for each information set. This distribution corresponds to the belief held by the player, computed by the application of Bayes rule. When the strategy profile $s$ maximizes the expected reward and the belief assessment $b$ is consistent with the observations by each player, we say that  $s,b$ is in sequential equilibrium. \textit{Sequential equilibrium} is both a Nash equilibrium and subgame perfect equilibrium. In the rest of the paper, equilibrium means \textit{sequential equilibrium} unless stated otherwise.
+
+\begin{definition}{Nash Equilbrium}
+%A strategy profile $S= S_A \times S_D$ %and a belief assessment $b$ 
+Let $S= S_1 \times S_2 \times ... \times S_n$ be the set strategy profiles for players $1,2,...,n$
+and $f(x)=(f_1(x),f_2(x),...,f_n(x))$ be the payoff function where each $f_i(x)$ denotes the utility of player $i$ where $x \in S$.
+Then $x = x_1 \times x_2.... \times x_n \in S$
+is a Nash equilibrium if it satifies the following condition.
+$$\forall i, f_i(x^*_i,x^*_{-i}) \ge f_i(x_i,x^*_{-i})  $$
+
+%\begin{enumerate}
+
+%\item (Sequential Rationality) At each information set, no player achieves higher expected gain given the belief $b$, by deviating from $s$.
+%\item (Consistency) $s$ and $b$ must satisfy the following conditions. 
+%- need a way to explain this in a simple manner, also need to find a handy way of showing this.
+%\begin{enumerate}[label=(\alph*)]
+    %\item There exists a sequence $(s^m, b^m)$ such that $(s^m, b^m) \rightarrow (s,b)$ as $m \rightarrow \infty$.
+    %\item For each $m$, $(s^m)$ is totally mixed. That is, any action has some possibility of being played.
+    %\item For each $m$, $b^m$ is computed by applying Bayes' theorem on $s^m$.
+%\end{enumerate}
+%\end{enumerate}
+\end{definition}
+Intuitively, this means that no player $i$ can achieve higher payoff by unilaterly deviating from $x$.
+In the rest of the paper, equilibrium means {Nash equilibrium} unless stated otherwise. Since mixed strategy includes probablistic choice over possible actions, the payoff function computes the \textit{expected payoff} for each player.
+% discuss why not other solution concepts?
+
+
+Other relevant solution concepts are \textit{Markov perfect equilibrium}, \textit{perfect Bayesian equilbrium}, and \textit{sequential equilibrium}. {Markov perfect equilibrium} is a refinement of {subgame perfect equilbrium}, and considers strategies which are conditioned only on the current state of the game. However, in our model, each player does not fully observe each other's actions, and therefore cannot determine the current state.  {Perfect Bayesian equilibrium}, also a refinement of {subgame perfect equilibrium} seems more related to other model for it does not assume full knowledge of the game. However, our model assumes {imperfect information}, not {incomplete information}. 
+
+
+Finally, sequential equilibrium specifies a belief for each player, which represents the probability distribution over nodes for each information set. This distribution corresponds to the belief held by the player, computed by the application of Bayes rule. When the strategy profile $S$ maximizes the expected reward and the belief assessment $b$ is consistent with the observations by each player, we say that  $s,b$ is in sequential equilibrium. Sequential equilibrium has the advantage that it guarantees each players plays a best move at any given information set. However, we did not analyze the game using sequential equilibrium, since the infinitely repeated natured of the game makes the computation of the belief assessment intractable. %!!!! clarify    
+%A relevant solution concept is \textit{sequential equilibrium}. 
+%Under the complete information assumption,  
+%Therefore, we only consider Nash equilibria of the game where each player aims to maximize his expected payoff over infinite horizon.
+
+%one shot deviation
+    
+
+\section{Will deceive be played by the Attacker in an equilibrium?}
+\subsection{1-Resource Model}
+First, we look at an instance of the game where $|R|=1$. That is, there is only one resource $A$ and $D$ are competing for. 
+In this case, we show that the attacker will not play deceive in equilibrium by showing that in the only equilibrium of the game, the attacker does not play deceive.
+	
+\begin{definition}
+{NoOp} strategy is an attacker and defender strategy where every information set is mapped to the action {no-op}.
+\end{definition}
+	
+\begin{definition}
+{AutoReboot} strategy is a defender strategy which maps every attacker probe to the action
+{reboot} and attacker {no-op} to {no-op}.
+\end{definition}
+	
+\begin{lemma} {{NoOp} vs {AutoReboot}} is an equilibrium of the game.
+\end{lemma}
+\begin{proof}
+    We show this is a Nash equilibrium of the game by showing that there is no unilateral deviation by either one of the player that results in higher payoff for the deviator.
+
+
+    For the attacker, any deviation means playing some number of probes. Since all the probes will be rebooted right after, there is no control benefit gain. Thus, this results in negative average gain due to the costs of probe, whereas in the original state the attacker receives zero average gain.
+    
+
+    For the defender, the original gain of 1 is the maximum attainable payoff. Thus, there is no beneficial deviation.
+\end{proof}
+
+\begin{comment}
+First, note that for the attacker, there is only one information set each time step. Thus, for an attacker node $n$, 
+$b(n|I) = 1$ if and only if $n$ is the node reached through continued NoOp from both players.
+
+For the defender, there can be two types of information sets. The first type, denoted $I_N$, denotes the information sets reached after attacker NoOp. The second type, denoted $I_A$, denotes any information set reached after attacker probe(Attack or Deceive). From $s$, we see that $b(n|I_N) = 1$ if and only if $n$ is the node reached through continued NoOp from both players. Also, $b(n|I_A) = 1$ if and only if $n$
+% clearly define b6In $b$, the nodes of play touched by following NoOp actions by each player are assigned probability $1$ in the information set it belongs. All other probabilities are $0$ in $b$.
+
+Now, WTS that $s$ is sequentially rational under $b$.
+For the attacker, any deviation means playing some number of probes. Since all the probes will be rebooted right after, there is no control benefit gain. Thus, this results in negative average gain due to the costs of probe, whereas in the original state the attacker receives zero average gain.
+For the defender, the original gain of 1 is the maximum attainable payoff. Thus, there is no beneficial deviation, and each player is best responding to another.
+    
+Finally, we have to show that $b$ is consistent. 
+Define $s^m$ in the following manner: For each step $t$ of the game, we perturb each player's strategy a bit, by introducing non-zero trembling probabilities $e_{t_a}$ for each action $a$ that is assigned probaility $0$ in $s$. Then, we can have $s^m \rightarrow s$ by taking $e_{t_a} \rightarrow 0$ as $ m \rightarrow 0$. Now, let's define $b^m$ to be the belief assessment induced by $s^m$. We have to show that $b^m \rightarrow b$ as $m \rightarrow 0$. Thus, we have to show that $b^m( \circ| )$
+
+First, we note that at any step of the game, the attacker has only one information set available. Thus, the consistency 
+\textbf{Note don't have to check attacker bc for him there is only one information set.}, How to argue through the abysmal information set that keeps getting larger and more numerous? Use the fact that any deviation is noticed right away, so it could be either of 2 cases: Deviation by attacker just happened, so Defender reboots. OR, deviation didn't happan, in which the first node argument works.
+Possible argument: We don't have to trace all the way back, in fact, first node argument is good enough.
+\textbf{TODO: FINISH THE PROOF!}
+	We show this is a Nash equilibrium of the game by showing that there is no unilateral deviation by either one of the player that results in higher payoff for the deviator.
+	\\\\
+	For the attacker, any deviation means playing some number of probes. Since all the probes will be rebooted right after, there is no control benefit gain. Thus, this results in negative average gain due to the costs of probe, whereas in the original state the attacker receives zero average gain.
+	\\\\
+	For the defender, the original gain of 1 is the maximum attainable payoff. Thus, there is no beneficial deviation.
+\end{comment}
+
+\begin{lemma} In equilibrium, the only way for the attacker to have positive control benefit is to at least {attack} twice.
+%, and the defender does not reboot after the probe.
+\end{lemma}
+\begin{proof}
+%If the attacker only attacks once, the best response by the defender is to reboot right after, yielding the attacker zero control benefit. \\
+For the defender best response to allow some attacker control of the resource, it must be that rebooting after each {attack} is too costly. If the attacker plays attack only once, the defender can reboot immediately and compensate for any arbitrary cost of reboot by ensuring infinite control of the resource.
+
+Note that this is a very weak condition for the attacker to have positive control benefit.
+\end{proof}
+	
+\begin{theorem} There are no other equilibria of the game other than the one shown in Lemma 1.
+\end{theorem}
+\begin{proof}
+First, consider any equilibrium in which the attacker has positive control benefit.
+By Lemma 2, we know that the attacker attacks at least twice.
+Because the defender cannot distinguish {attack} from {deceive}, the defender's strategy must have the same response to {deceive}.
+Therefore, the second attack can be replaced by {deceive} for higher benefit, since {deceive} has a cheaper cost.
+%
+%we know that there is an \emph{attack} that is rebooted by the defender. However,
+%the attacker obtains a higher gain by replacing the rebooted \emph{attack} with \emph{deceive}. 
+%
+This is a contradiction, since the original strategy is not a best response to the defender strategy.
+
+Next, consider the case in which the attacker has zero control benefit.
+In this case, the attacker's best response is to minimize move cost, hence the best response is {NoOp} strategy. Against this attacker strategy, the defender best responds by playing {AutoReboot}, as shown in Lemma 1. 
+
+Therefore, NoOp vs {AutoReboot} is the only equilibrium of the game
+\end{proof}
+	
+\begin{corollary} The attacker never plays {deceive} in equilibrium.
+\end{corollary}
+\begin{proof}
+This follows from Lemma 1, Theorem 3, and the fact that {deceive} is never played by the attacker in the equilibrium.
+\end{proof}
+
+\begin{lemma} When $0<\delta<1$, Corollary 4 still holds. 
+\end{lemma}
+\begin{proof}
+Lemma 1 still holds, since the ordering of the expected returns of each action is preserved. Also, in Lemma 2, unless $\delta = 0$, the expected return of infinite control outweighs the cost of reboot. Thus, Lemma 2 also holds. Therefore, Theorem 3 also holds.
+\end{proof}
+
+\subsection{Discussion}
+There are opposing intuitions that motivated our research. First, intuitively, deception does not provide any cost for the attacker while it incurs some cost. Thus, a rational attacker would play deceive only when it guarantees future gain. On the other hand, deception might be reasonable under certain circumstances; if mixing deceiving moves with real attacks may force the opponent to selectively respond, allowing some attacks as a result.
+
+In the end, our analysis shows that playing deceive is not a rational choice for the attacker in this game. Looking back, this is not surprising because deception offers no immediate reward while incurring cost for the attacker. {For deception to be useful for the attacker, it must move the defender to an information set in which the defender expects to achieve higher reward by not rebooting right after a probe.} Our proof of Theorem 3 effectively shows that there can be no such information set in any play of the game. This conclusion is sweeping because there are no restraints on the costs of the moves other than that NoOp is cheaper than Deceive, which is cheaper than Attack.
+
+What is more surprising, which we will show next, is that having the option do Deceive seems to result in a worse outcome for the Attacker.
+
+\subsection{Comparison with No-Deception Game}
+
+Since the Attacker cannot achieve any positive utility in this game, it is natural to ask if the option to Deceive is helpful at all. It is easy to think that having more options cannot hurt. Contrary to this intuition, we observe that the option to deceive causes a lower payoff for the attacker. From our proof of Theorem 3, we saw that the option to Deceive created a unilateral deviation that is beneficial for the attacker, effectively checking off any possible equilibrium where the Attacker might achieve a positive payoff. Indeed, it is possible to construct an equilibrium where the attacker achieves positive payoff, if deceive is removed from the possible action set.
+
+Consider the following game in which the Attacker can only NoOP or Attack, and otherwise identical to the model we have just analyze. Assume Attack costs between $0$ and $1$, Reset between $1$ and $2$ and NoOp $0$ for both players. Also, assume that the control benefit is $1$ for both. Then, let the Attacker play a strategy where it plays Attack at any timestep $t$. Also, let the Defender play NoOp after an Attack from A, otherwise it plays Reset. This strategy profile results in a payoff profile of $a,d$ such that $0<a<1$ and $d=0$. It is easy to check that this is a Nash equilibrium: if the Attacker deviates by playing one or more NoOp, its final utility strictly decreases because the payoff at that round will decrease to 0. Also, if the Defender plays Reset after an Attack, the cost of Reset will result in a lower average payoff.
+
+Thus, we have a seemingly paradoxical result that Deceive actually hurts the Attacker. However, it is important to remind that several assumptions made in the model may not hold in real situations. For instance, system administrators might not be even aware that the Attacker can issue deceptive attacks. In this case, the assumption of complete information is not valid- it is highly likely that the Attacker will be able to use Deceive moves to its advantage. 
+
+\subsection{Extensions of the model} 
+In the previous seciton, we have seen that the 1-resource version of the game has one trivial equilibrium, independent of move costs and discounting factor. In this section, we explore the extent to which this result holds true, by modifying some aspects of the game.
+
+\subsubsection{Multiple resource game with non-linear costs}
+One natural extension of the game is to model multiple resourcesm i.e. $|R|>1$. We first show that if each resource is independent of any other resource, there is only one equilibrium where the attacker and the defender each play NoOp and AllReboot on all resources. 
+
+\begin{comment}
+\begin{definition}
+Let $O = \{ O_1, O_2, ... ,O_m \}$ be the set of $m$ resources in the extended model. We say that $O$ is independent if for all $t$,
+$$\sum_{n=1}^{m} G_{O_n}(t) = G(t) \text{ and } \sum_{n=1}^{m} C_{O_n}(t) = C(t)$$
+for all $ j \in \{1,2,..,m\}$,
+We say that a resource is independent if the cost and benefit from the resource is determined only by the control state of the resource.
+\end{definition}
+\end{comment}
+
+%It follows from the definition that an independent resource's payoff matrix is also determined by the control state of that resource.
+
+\begin{theorem} In a multiple-resource version of the game where each resource is independent, the only equilibrium is NoOp vs AllReboot.
+\end{theorem}
+\begin{proof}
+Since resources are independent from each other, a game with $|R|$ resources can be analyzed as $|R|$ instances of $1$-resource model. Then, by Theorem 3, NoOp vs AllReboot is played on each of the resources.
+%\textbf{Proof Idea:. TODO:} 
+\end{proof}
+Thus, if the resources are treated as independent, i.e. the state of one resource does not affect others, then a result analogous to that of the base model still holds. However, this independence assumption frequently does not hold in cybersecurity situations. For system administrators, rebooting several resources is often costlier than rebooting just one system, as multiple systems become unusable and user access decreases as a result. Also, it is also possible that the attacker is constrained in the number of attacks he/she can simultaneously execute. Thus, we consider the case when resources are not independent.
+
+\subsubsection{An example equilibrium in a 2-resource game}
+We assume there are 2 resources the players are competing for. The cost of all possible actions at each time step is given in the following tables.
+
+\begin{table}[!htb]
+    \caption{Cost Table}
+    \begin{minipage}{.5\linewidth}
+      \caption{Defender Cost}
+      \centering
+        \begin{tabular}{|l|l|}
+\hline
+Move & Cost \\ \hline
+R, N &      \\ \hline
+R, R &      \\ \hline
+N, N &      \\ \hline
+\end{tabular}
+    \end{minipage}%
+    \begin{minipage}{.5\linewidth}
+      \centering
+        \caption{Attacker Cost}
+\begin{tabular}{|l|l|}
+\hline
+Move & Cost \\ \hline
+A, N &      \\ \hline
+D, N &      \\ \hline
+A, D &      \\ \hline
+N, D &      \\ \hline
+A, A &      \\ \hline
+D, D &      \\ \hline
+N, N &      \\ \hline
+\end{tabular}
+    \end{minipage} 
+\end{table}
+Now, let $s_A$ be an attacker strategy that picks one resource with probability 0.5, and attacks that resource and plays deceive on the other. Also, let $s_D$ be a defender strategy that at $t=0$, picks one resource, reboots it and noops on the other, and $\forall t>0$, reboots the resource nooped on $t-1$. Now, let $s=(s_D,s_A)$ and $b$ be the belief induced by the strategy. Now, WTS that $(s,b)$ is a sequential equilibrium.
+
+
+
+\subsubsection{Budget-limited defender game}
+In real life, a system administrator or security personnel is often confined by practical concerns over resource usage over a fixed period of time. For example, in the case of a defender in charge of one resource, he/she might want to limit the number of reboots to 3 times in 5 time units, in order to guarantee minimum access and usability. In Section 3, we assumed that there was no such constraint.
+
+\begin{definition}
+Define budget-limit condition.
+\end{definition}
+
+\section{Conclusion}
+    
+\medskip
+\bibliographystyle{unsrt}
+\bibliography{dmin1}
+\end{document}
+
+\grid
+
+%\begin{comment}
+    \textit{Views and History} \hspace*{0.1cm}
+    A \textit{view} is the history of the game from one player’s viewpoint, from
+    the beginning of the game up to time $t$. It lists every move that player $i$ has made and the signal(if the player is the Defender) it has received at each time.
+    The view for the Attacker is the list of the moves he has made. For the Defender, the view is the list of pairs consisting of the moves made and the signal(Probe or not). A \textit{history} consists of both the Attacker and the Defender's views.
+    ~\\\\
+    \textit{Strategies} \hspace*{0.1cm}
+    A strategy for playing this game is a mapping from views to a move.
+    For the Attacker, $S_A(v)$ denotes the probability distribution assigning a positive real number to a type of move, where $v$ is an Attacker view with length $j$. A move to be played at round $j+1$ is picked according to this distribution.
+    $S_D(v)$ is defined analogously for the Defender.
+    %\\\\
+    %We call any strategy $S$ to be \textit{deterministic} if for every view $v$, $S$ maps $v$ to a probability distribution with a move with probability $1$. If a strategy is not deterministic, it is \textit{randomizing}.
+    ~\\\\
+    %\end{comment}
+    
